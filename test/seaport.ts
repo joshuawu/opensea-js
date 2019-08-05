@@ -70,8 +70,7 @@ suite('seaport', () => {
   test('Includes API key in token request', async () => {
     const oldLogger = client.api.logger
 
-    return new Promise((resolve, reject) => {
-
+    const logPromise = new Promise((resolve, reject) => {
       client.api.logger = log => {
         try {
           assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
@@ -82,8 +81,10 @@ suite('seaport', () => {
           client.api.logger = oldLogger
         }
       }
-      client.api.getTokens({ symbol: "MANA" })
     })
+
+    await client.api.getTokens({ symbol: "MANA" })
+    await logPromise
   })
 
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
