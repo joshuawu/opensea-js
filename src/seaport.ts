@@ -845,7 +845,7 @@ export class OpenSeaPort {
       this._dispatch(EventType.ApproveAsset, {
         accountAddress,
         proxyAddress,
-        asset: getWyvernNFTAsset(schema, tokenId, tokenAddress)
+        asset: getWyvernNFTAsset(schema, {tokenId, tokenAddress})
       })
 
       const gasPrice = await this._computeGasPrice()
@@ -1077,7 +1077,7 @@ export class OpenSeaPort {
       wyAsset = asset as WyvernAsset
     } else {
       const openseaAsset = asset as Asset
-      wyAsset = getWyvernNFTAsset(schema, openseaAsset.tokenId, openseaAsset.tokenAddress)
+      wyAsset = getWyvernNFTAsset(schema, openseaAsset)
     }
 
     const abi = schema.functions.transfer(wyAsset)
@@ -1167,7 +1167,7 @@ export class OpenSeaPort {
     toAddress = validateAndFormatWalletAddress(this.web3, toAddress)
 
     const schema = this._getSchema(schemaName)
-    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
+    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
 
     const { calldata } = encodeAtomicizedTransfer(schema, wyAssets, fromAddress, toAddress, this._wyvernProtocol.wyvernAtomicizer)
 
@@ -1489,7 +1489,7 @@ export class OpenSeaPort {
     ): Promise<number> {
 
     const schema = this._getSchema(schemaName)
-    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
+    const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
 
     const proxyAddress = await this._getProxy(fromAddress)
     if (!proxyAddress) {

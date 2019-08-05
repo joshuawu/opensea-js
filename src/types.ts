@@ -220,6 +220,8 @@ export interface Asset {
   tokenAddress: string,
   // The NFT version of this asset
   nftVersion?: NFTVersion
+  // Optional for ENS names
+  name?: string
 }
 
 /**

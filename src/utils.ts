@@ -716,23 +716,23 @@ export function getWyvernAsset(
       : undefined
     return getWyvernFTAsset(schema as Schema<WyvernFTAsset>, asset.tokenAddress, asset.identifier, quantity, classID)
   } else {
-    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset.tokenId, asset.tokenAddress)
+    return getWyvernNFTAsset(schema as Schema<WyvernNFTAsset>, asset)
   }
 }
 
 /**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
- * @param tokenId The token's id
- * @param tokenAddress The address of the token's contract
+ * @param asset The asset
  */
 export function getWyvernNFTAsset(
-    schema: Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string
+    schema: Schema<WyvernNFTAsset>, asset: Asset
   ): WyvernNFTAsset {
 
   return schema.assetFromFields({
-    'ID': tokenId.toString(),
-    'Address': tokenAddress.toLowerCase(),
+    'ID': asset.tokenId.toString(),
+    'Address': asset.tokenAddress.toLowerCase(),
+    'Name': asset.name,
   })
 }
 
@@ -765,24 +765,6 @@ export function getWyvernFTAsset(
 }
 
 /**
- * Get the Wyvern representation of an ENS name as an asset
- * @param schema The WyvernSchema needed to access this asset
- * @param name The ENS name, ending in .eth
- */
-export function getWyvernENSNameAsset(
-    schema: Schema<WyvernENSNameAsset>, name: string
-  ): WyvernENSNameAsset {
-
-  if (!schema.unifyFields) {
-    throw new Error("Incorrect schema type for this asset")
-  }
-
-  return schema.assetFromFields(schema.unifyFields({
-    'Name': name,
-  }))
-}
-
-/**
  * Get the Wyvern representation of a group of NFT assets
  * Sort order is enforced here
  * @param schema The WyvernSchema needed to access these assets
@@ -792,7 +774,7 @@ export function getWyvernBundle(
     schema: any, assets: Asset[]
   ): WyvernBundle {
 
-  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset.tokenId, asset.tokenAddress))
+  const wyAssets = assets.map(asset => getWyvernNFTAsset(schema, asset))
 
   const sortedWyAssets = _.sortBy(wyAssets, [(a: WyvernNFTAsset) => a.address, (a: WyvernNFTAsset) => a.id])
 
