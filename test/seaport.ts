@@ -404,7 +404,8 @@ suite('seaport', () => {
       extraBountyBasisPoints: 0,
       schemaName: WyvernSchemaName.ENSShortNameAuction
     })
-    assert.equal(buyOrder, {})
+    // TODO (joshuawu): Fill this test out after backend supports ENS short names.
+    // assert.equal(buyOrder, {})
   })
 
   test("Computes fees correctly for non-zero-fee asset", async () => {
