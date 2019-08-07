@@ -12,11 +12,11 @@ import {
 
 import { OpenSeaPort } from '../src/index'
 import * as Web3 from 'web3'
-import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName } from '../src/types'
+import { Network, OrderJSON, OrderSide, Order, SaleKind, UnhashedOrder, UnsignedOrder, Asset, OpenSeaAssetContract, WyvernSchemaName, FungibleAsset } from '../src/types'
 import { orderFromJSON, getOrderHash, orderToJSON, MAX_UINT_256, getCurrentGasPrice, estimateCurrentPrice, assignOrdersToSides, NULL_ADDRESS, DEFAULT_SELLER_FEE_BASIS_POINTS, OPENSEA_SELLER_BOUNTY_BASIS_POINTS, DEFAULT_BUYER_FEE_BASIS_POINTS, DEFAULT_MAX_BOUNTY, makeBigNumber, OPENSEA_FEE_RECIPIENT, ENJIN_COIN_ADDRESS, ENJIN_ADDRESS, INVERSE_BASIS_POINT } from '../src/utils'
-import ordersJSONFixture = require('./fixtures/orders.json')
+import * as ordersJSONFixture from './fixtures/orders.json'
 import { BigNumber } from 'bignumber.js'
-import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE } from './constants'
+import { ALEX_ADDRESS, CRYPTO_CRYSTAL_ADDRESS, DIGITAL_ART_CHAIN_ADDRESS, DIGITAL_ART_CHAIN_TOKEN_ID, MYTHEREUM_TOKEN_ID, MYTHEREUM_ADDRESS, GODS_UNCHAINED_ADDRESS, CK_ADDRESS, DEVIN_ADDRESS, ALEX_ADDRESS_2, GODS_UNCHAINED_TOKEN_ID, CK_TOKEN_ID, MAINNET_API_KEY, RINKEBY_API_KEY, CK_RINKEBY_ADDRESS, CK_RINKEBY_TOKEN_ID, CATS_IN_MECHS_ID, CRYPTOFLOWERS_CONTRACT_ADDRESS_WITH_BUYER_FEE, ENS_HELLO_TOKEN_ID, ENS_RINKEBY_TOKEN_ADDRESS, ENS_RINKEBY_SHORT_NAME_OWNER, ENS_HELLO_NAME } from './constants'
 
 const ordersJSON = ordersJSONFixture as any
 const englishSellOrderJSON = ordersJSON[0] as OrderJSON
@@ -70,8 +70,7 @@ suite('seaport', () => {
   test('Includes API key in token request', async () => {
     const oldLogger = client.api.logger
 
-    return new Promise((resolve, reject) => {
-
+    const logPromise = new Promise((resolve, reject) => {
       client.api.logger = log => {
         try {
           assert.include(log, `"X-API-KEY":"${MAINNET_API_KEY}"`)
@@ -82,8 +81,10 @@ suite('seaport', () => {
           client.api.logger = oldLogger
         }
       }
-      client.api.getTokens({ symbol: "MANA" })
     })
+
+    await client.api.getTokens({ symbol: "MANA" })
+    await logPromise
   })
 
   ordersJSON.map((orderJSON: OrderJSON, index: number) => {
@@ -113,6 +114,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         extraBountyBasisPoints: 0,
@@ -130,6 +132,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         endAmount: 1, // Allow declining minimum bid
@@ -148,6 +151,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         endAmount: 3,
@@ -166,6 +170,7 @@ suite('seaport', () => {
     try {
       await client._makeSellOrder({
         asset: { tokenAddress, tokenId },
+        quantity: 1,
         accountAddress,
         startAmount: 2,
         endAmount: 1,
@@ -259,6 +264,7 @@ suite('seaport', () => {
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress,
@@ -349,6 +355,7 @@ suite('seaport', () => {
 
     const sellOrder = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress: takerAddress,
       startAmount: amountInToken,
       paymentTokenAddress,
@@ -361,6 +368,7 @@ suite('seaport', () => {
 
     const buyOrder = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       paymentTokenAddress,
       startAmount: amountInToken,
@@ -378,6 +386,26 @@ suite('seaport', () => {
 
     await client._buyOrderValidationAndApprovals({ order: buyOrder, accountAddress })
     await client._sellOrderValidationAndApprovals({ order: sellOrder, accountAddress: takerAddress })
+  })
+
+  test("Creates ENS name buy order", async () => {
+    const paymentTokenAddress = (await client.getFungibleTokens({ symbol: 'WETH'}))[0].address
+    const buyOrder = await client._makeBuyOrder({
+      asset: {
+        tokenId: ENS_HELLO_TOKEN_ID,
+        tokenAddress: ENS_RINKEBY_TOKEN_ADDRESS,
+        name: ENS_HELLO_NAME,
+      },
+      quantity: 1,
+      accountAddress: ENS_RINKEBY_SHORT_NAME_OWNER,
+      paymentTokenAddress,
+      startAmount: 0.01,
+      expirationTime: (Date.now() / 1000 + 60 * 60 * 24),  // one day from now
+      extraBountyBasisPoints: 0,
+      schemaName: WyvernSchemaName.ENSShortNameAuction
+    })
+    // TODO (joshuawu): Fill this test out after backend supports ENS short names.
+    // assert.equal(buyOrder, {})
   })
 
   test("Computes fees correctly for non-zero-fee asset", async () => {
@@ -573,6 +601,7 @@ suite('seaport', () => {
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       extraBountyBasisPoints: bountyPercent * 100,
@@ -620,6 +649,7 @@ suite('seaport', () => {
 
     const order = await client._makeSellOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
@@ -658,6 +688,7 @@ suite('seaport', () => {
 
     const order = await client._makeBuyOrder({
       asset: { tokenAddress, tokenId },
+      quantity: 1,
       accountAddress,
       startAmount: amountInToken,
       paymentTokenAddress: paymentToken.address,
@@ -804,8 +835,10 @@ suite('seaport', () => {
 
   test('Asset locked in contract is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
-      tokenAddress: GODS_UNCHAINED_ADDRESS,
+      asset: {
+        tokenId: GODS_UNCHAINED_TOKEN_ID.toString(),
+        tokenAddress: GODS_UNCHAINED_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
       didOwnerApprove: true
@@ -815,8 +848,10 @@ suite('seaport', () => {
 
   test('ERC-721 v3 asset not owned by fromAddress is not transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: "1",
-      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      asset: {
+        tokenId: "1",
+        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
     })
@@ -825,8 +860,10 @@ suite('seaport', () => {
 
   test('ERC-721 v3 asset owned by fromAddress is transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
-      tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      asset: {
+        tokenId: DIGITAL_ART_CHAIN_TOKEN_ID.toString(),
+        tokenAddress: DIGITAL_ART_CHAIN_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2
     })
@@ -835,8 +872,10 @@ suite('seaport', () => {
 
   test('ERC-721 v1 asset owned by fromAddress is transferrable', async () => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId: CK_TOKEN_ID.toString(),
-      tokenAddress: CK_ADDRESS,
+      asset: {
+        tokenId: CK_TOKEN_ID.toString(),
+        tokenAddress: CK_ADDRESS,
+      },
       fromAddress: ALEX_ADDRESS,
       toAddress: ALEX_ADDRESS_2,
       didOwnerApprove: true
@@ -928,7 +967,13 @@ suite('seaport', () => {
     assert.equal(orders.length, client.api.pageSize)
     orders.map(order => {
       assert.isNotNull(order.currentPrice)
-      if (!order.currentPrice) {
+      const buyerFeeBPS = order.asset
+        ? order.asset.assetContract.buyerFeeBasisPoints
+        : order.assetBundle && order.assetBundle.assetContract
+          ? order.assetBundle.assetContract.buyerFeeBasisPoints
+          : null
+      if (!order.currentPrice || buyerFeeBPS) {
+        // Skip checks with buyer fees
         return
       }
       const multiple = order.side == OrderSide.Sell
@@ -977,7 +1022,11 @@ suite('seaport', () => {
       assert.isNotEmpty(order.paymentTokenContract)
 
       const accountAddress = ALEX_ADDRESS
-      const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+      const matchingOrder = client._makeMatchingOrder({
+        order,
+        accountAddress,
+        recipientAddress: accountAddress
+      })
       const matchingOrderHash = matchingOrder.hash
       delete matchingOrder.hash
       assert.isUndefined(matchingOrder.hash)
@@ -1070,8 +1119,13 @@ suite('seaport', () => {
 })
 
 async function testMatchingOrder(order: Order, accountAddress: string, testAtomicMatch = false, referrerAddress?: string) {
+  const recipientAddress = ALEX_ADDRESS_2 // Test a separate recipient
   // TODO test mode for matching order to use 0x11111 in calldata
-  const matchingOrder = client._makeMatchingOrder({order, accountAddress})
+  const matchingOrder = client._makeMatchingOrder({
+    order,
+    accountAddress,
+    recipientAddress
+  })
   assert.equal(matchingOrder.hash, getOrderHash(matchingOrder))
 
   const { buy, sell } = assignOrdersToSides(order, matchingOrder)
@@ -1086,7 +1140,12 @@ async function testMatchingOrder(order: Order, accountAddress: string, testAtomi
   if (testAtomicMatch && !order.waitingForBestCounterOrder) {
     const isValid = await client._validateOrder(order)
     assert.isTrue(isValid)
-    const isFulfillable = await client.isOrderFulfillable({ order, accountAddress, referrerAddress })
+    const isFulfillable = await client.isOrderFulfillable({
+      order,
+      accountAddress,
+      recipientAddress,
+      referrerAddress
+    })
     assert.isTrue(isFulfillable)
     const gasPrice = await client._computeGasPrice()
     console.info(`Gas price to use: ${client.web3.fromWei(gasPrice, 'gwei')} gwei`)
@@ -1099,7 +1158,11 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
     hash: getOrderHash(unhashedOrder)
   }
 
-  const matchingOrder = client._makeMatchingOrder({ order, accountAddress })
+  const matchingOrder = client._makeMatchingOrder({
+    order,
+    accountAddress,
+    recipientAddress: accountAddress
+  })
   if (counterOrderListingTime != null) {
     matchingOrder.listingTime = makeBigNumber(counterOrderListingTime)
     matchingOrder.hash = getOrderHash(matchingOrder)
@@ -1148,9 +1211,10 @@ async function testMatchingNewOrder(unhashedOrder: UnhashedOrder, accountAddress
   assert.isTrue(isValid)
 
   // Make sure assets are transferrable
-  await Promise.all(getAssets(order).map(async ({ tokenAddress, tokenId }, i) => {
+  await Promise.all(getAssetsAndQuantities(order).map(async ({asset, quantity}) => {
     const isTransferrable = await client.isAssetTransferrable({
-      tokenId, tokenAddress,
+      asset,
+      quantity,
       fromAddress: sell.maker,
       toAddress: buy.maker,
       didOwnerApprove: true
@@ -1215,9 +1279,10 @@ function testFeesMakerOrder(order: Order | UnhashedOrder, assetContract?: OpenSe
   }
 }
 
-function getAssets(
-    order: Order | UnsignedOrder | UnhashedOrder
-  ): Asset[] {
+function getAssetsAndQuantities(
+    order: Order | UnsignedOrder | UnhashedOrder,
+    identifierPrefix = 'erc1155'
+  ): Array<{ asset: Asset | FungibleAsset, quantity: number }> {
 
   const wyAssets = order.metadata.bundle
     ? order.metadata.bundle.assets
@@ -1227,8 +1292,22 @@ function getAssets(
 
   assert.isNotEmpty(wyAssets)
 
-  return wyAssets.map(({ id, address }) => ({
-    tokenId: id,
-    tokenAddress: address
-  }))
+  return wyAssets.map(wyAsset => {
+    const { address } = wyAsset
+    if ('quantity' in wyAsset) {
+      const tokenId = 'id' in wyAsset && wyAsset.id != null ? wyAsset.id : null
+      const asset: FungibleAsset = {
+        identifier: `${identifierPrefix}/${address}${tokenId ? '/' + tokenId : ''}`,
+        tokenId,
+        tokenAddress: address
+      }
+      return { asset, quantity: wyAsset.quantity }
+    } else {
+      const asset: Asset = {
+        tokenId: wyAsset.id,
+        tokenAddress: wyAsset.address
+      }
+      return { asset, quantity: 1 }
+    }
+  })
 }

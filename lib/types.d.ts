@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-import { FungibleToken } from 'wyvern-schemas';
-export { Network, HowToCall, ECSignature, FungibleToken };
+import { Token } from 'wyvern-schemas/dist-tsc/types';
+export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are five types:
  * 1. Transaction events, which tell you when a new transaction was
@@ -109,9 +109,12 @@ export declare enum WyvernSchemaName {
  *      `takeOwnership` instead
  * 3.0: The current OpenZeppelin standard:
  *      https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC721/ERC721.sol
+ * Special cases:
+ * locked: When the transfer function has been locked by the dev
  */
 export declare enum NFTVersion {
     Unsupported = "unsupported",
+    Locked = "locked",
     Enjin = "1155-1.0",
     ERC721v1 = "1.0",
     ERC721v2 = "2.0",
@@ -129,7 +132,10 @@ export interface WyvernNFTAsset extends WyvernAsset {
     address: string;
 }
 export interface WyvernFTAsset extends WyvernAsset {
+    identifier: string;
+    id?: string;
     address: string;
+    quantity: number;
 }
 export interface WyvernERC1155Asset extends WyvernNFTAsset {
 }
@@ -161,7 +167,7 @@ export interface OpenSeaAccount {
     };
 }
 /**
- * Simple OpenSea asset spec
+ * Simple, unannotated non-fungible asset spec
  */
 export interface Asset {
     tokenId: string;
@@ -169,7 +175,22 @@ export interface Asset {
     nftVersion?: NFTVersion;
 }
 /**
- * OpenSea asset contract
+ * Simple, unannotated fungible asset spec
+ * `identifier` conforms to the OpenSea UID spec
+ * Supported types:
+ * - enjin/TOKEN_ID_CLASS_PREFIX
+ * - erc155/ADDRESS/TOKEN_ID_CLASS_PREFIX
+ * - erc20/ADDRESS
+ * `tokenId` id suffix for this token (ERC-1155). `null` if no ID is needed (ERC-20)
+ * `tokenAddress` the address of the smart contract
+ */
+export interface FungibleAsset {
+    identifier: string;
+    tokenId: string | null;
+    tokenAddress: string;
+}
+/**
+ * Annotated asset contract with OpenSea metadata
  */
 export interface OpenSeaAssetContract {
     name: string;
@@ -189,7 +210,7 @@ export interface OpenSeaAssetContract {
     wikiLink?: string;
 }
 /**
- * The OpenSea asset fetched by the API
+ * Annotated asset spec with OpenSea metadata
  */
 export interface OpenSeaAsset extends Asset {
     assetContract: OpenSeaAssetContract;
@@ -211,8 +232,16 @@ export interface OpenSeaAsset extends Asset {
     lastSale: object | null;
     backgroundColor: string | null;
     transferFee: BigNumber | string | null;
-    transferFeePaymentToken: FungibleToken | null;
+    transferFeePaymentToken: OpenSeaFungibleToken | null;
 }
+/**
+ * Full annotated Fungible Token spec with OpenSea metadata
+ */
+export interface OpenSeaFungibleToken extends Token {
+    imageUrl?: string;
+    ethPrice?: string;
+}
+export declare type FungibleToken = OpenSeaFungibleToken;
 /**
  * Bundles of assets, grouped together into one OpenSea order
  * URLs for bundles are auto-generated from the name
@@ -272,9 +301,10 @@ export interface UnhashedOrder extends WyvernOrder {
     makerReferrerFee: BigNumber;
     waitingForBestCounterOrder: boolean;
     metadata: {
-        asset?: WyvernNFTAsset;
+        asset?: WyvernFTAsset | WyvernNFTAsset;
         bundle?: WyvernBundle;
         schema: WyvernSchemaName;
+        quantity?: number;
     };
 }
 export interface UnsignedOrder extends UnhashedOrder {
@@ -290,7 +320,7 @@ export interface Order extends UnsignedOrder, Partial<ECSignature> {
     currentBounty?: BigNumber;
     makerAccount?: OpenSeaAccount;
     takerAccount?: OpenSeaAccount;
-    paymentTokenContract?: FungibleToken;
+    paymentTokenContract?: OpenSeaFungibleToken;
     feeRecipientAccount?: OpenSeaAccount;
     cancelledOrFinalized?: boolean;
     markedInvalid?: boolean;
@@ -370,13 +400,14 @@ export interface OpenSeaAssetQuery {
     offset?: number;
 }
 /**
- * Query interface for Fungible Tokens
+ * Query interface for Fungible Assets
  */
-export interface FungibleTokenQuery extends Partial<FungibleToken> {
+export interface OpenSeaFungibleTokenQuery extends Partial<OpenSeaFungibleToken> {
     limit?: number;
     offset?: number;
     symbol?: string;
 }
+export declare type FungibleTokenQuery = OpenSeaFungibleTokenQuery;
 export interface OrderbookResponse {
     orders: OrderJSON[];
     count: number;

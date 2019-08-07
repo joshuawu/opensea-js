@@ -24,6 +24,7 @@ Published on [GitHub](https://github.com/ProjectOpenSea/opensea-js) and [npm](ht
   - [Referring Listings](#Referring-Listings)
   - [Custom Referral Bounties](#Custom-Referral-Bounties)
 - [Advanced](#Advanced)
+  - [Purchasing Items for Other Users](#Purchasing-Items-for-Other-Users)
   - [Bulk Transfers](#Bulk-Transfers)
   - [Creating Bundles](#Creating-Bundles)
   - [Using ERC-20 Tokens Instead of Ether](#Using-ERC-20-Tokens-Instead-of-Ether)
@@ -279,7 +280,7 @@ const transactionHash = await seaport.transfer({
 })
 ```
 
-To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in a `FungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
+To transfer fungible assets without token IDs, like ERC20 tokens, you can pass in an `OpenSeaFungibleToken` as the `asset`, set `schemaName` to "ERC20", and include `quantity` to indicate how many:
 
 ```JavaScript
 
@@ -340,7 +341,22 @@ Developers can request to increase the OpenSea fee to allow for higher bounties 
 
 ## Advanced
 
-Interested in making bundling items together or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+Interested in purchasing for users server-side or with a bot, making bundling items together, or making bids in different ERC-20 tokens? OpenSea.js can help with that.
+
+### Purchasing Items for Other Users
+
+You can buy and transfer an item to someone else in one step! Just pass the `recipientAddress` parameter:
+
+```JavaScript
+const order = await seaport.api.getOrder({ side: OrderSide.Sell, ... })
+await this.props.seaport.fulfillOrder({
+  order,
+  accountAddress, // The address of your wallet, which will sign the transaction
+  recipientAddress // The address of the recipient, i.e. the wallet you're purchasing on behalf of
+})
+```
+
+If the order is a sell order (`order.side === OrderSide.Sell`), the taker is the *buyer* and this will prompt the buyer to pay for the item(s) but send them to the `recipientAddress`. If the order is a buy order ( `OrderSide.Buy`), the taker is the *seller* but the bid amount be sent to the `recipientAddress`.
 
 ### Bulk Transfers
 
@@ -384,8 +400,6 @@ Wait what, you can use other currencies than ETH?
 
 ### Using ERC-20 Tokens Instead of Ether
 
-**New in version 0.3:** now you can make auctions and offers in whatever ERC-20 token you want! Just specify the token's contract address as the `paymentTokenAddress` when creating the order.
-
 Here's an example of listing the Genesis CryptoKitty for $100! No more needing to worry about the exchange rate:
 
 ```JavaScript
@@ -413,10 +427,11 @@ const order = await seaport.api.getOrders({
 })
 ```
 
-**Fun note:** all ERC-20 tokens are allowed! This means you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea for the near future:
+**Fun note:** soon, all ERC-20 tokens will be allowed! This will mean you can create crazy offers on crypto collectibles **using your own ERC-20 token**. However, opensea.io will only display offers and auctions in ERC-20 tokens that it knows about, optimizing the user experience of order takers. Orders made with the following tokens will be shown on OpenSea:
 
 * MANA, Decentraland's currency: https://etherscan.io/token/0x0f5d2fb29fb7d3cfee444a200298f468908cc942 
 * DAI, Maker's stablecoin, pegged to $1 USD: https://etherscan.io/token/0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+* And tons more! See the "Currencies" list in the sidebar on https://opensea.io/assets for a full list, or contact us to add yours: [Discord](https://discord.gg/ga8EJbv)
 
 ### Private Auctions
 
