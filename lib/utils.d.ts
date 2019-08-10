@@ -3,7 +3,7 @@ import * as Web3 from 'web3';
 import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist-tsc/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { HowToCall } from 'wyvern-js/lib/types';
-import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernENSNameAsset, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleToken } from './types';
+import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleToken } from './types';
 export declare const NULL_ADDRESS: string;
 export declare const NULL_BLOCK_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export declare const OPENSEA_FEE_RECIPIENT = "0x5b3256965e7c3cf26e11fcaf296dfc8807c01073";
@@ -27,7 +27,7 @@ export declare const MIN_EXPIRATION_SECONDS = 10;
 export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
 export declare const SELL_ORDER_BATCH_SIZE = 3;
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
-export declare const annotateERC721TransferABI: (asset: WyvernERC721Asset) => AnnotatedFunctionABI;
+export declare const annotateERC721TransferABI: (asset: WyvernERC721Asset) => any;
 /**
  * Promisify a call a method on a contract,
  * handling Parity errors. Returns '0x' if error.
@@ -133,10 +133,9 @@ export declare function getWyvernAsset(schema: Schema<WyvernNFTAsset | WyvernFTA
 /**
  * Get the Wyvern representation of an NFT asset
  * @param schema The WyvernSchema needed to access this asset
- * @param tokenId The token's id
- * @param tokenAddress The address of the token's contract
+ * @param asset The asset
  */
-export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, tokenId: string, tokenAddress: string): WyvernNFTAsset;
+export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, asset: Asset): WyvernNFTAsset;
 /**
  * Get the Wyvern representation of a fungible asset
  * @param schema The WyvernSchema needed to access this asset
@@ -146,12 +145,6 @@ export declare function getWyvernNFTAsset(schema: Schema<WyvernNFTAsset>, tokenI
  * @param classID The numerical ID (converted from hex) for the asset's class. Can be undefined if this asset is fully fungible (ERC-20).
  */
 export declare function getWyvernFTAsset(schema: Schema<WyvernFTAsset>, address: string, identifier: string, quantity: number, classID?: string): WyvernFTAsset;
-/**
- * Get the Wyvern representation of an ENS name as an asset
- * @param schema The WyvernSchema needed to access this asset
- * @param name The ENS name, ending in .eth
- */
-export declare function getWyvernENSNameAsset(schema: Schema<WyvernENSNameAsset>, name: string): WyvernENSNameAsset;
 /**
  * Get the Wyvern representation of a group of NFT assets
  * Sort order is enforced here
@@ -196,7 +189,7 @@ export declare function encodeAtomicizedTransfer(schema: Schema<any>, assets: Wy
  * @param from From address
  * @param to To address
  */
-export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): string;
+export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): any;
 /**
  * Encode a call to a user's proxy contract
  * @param address The address for the proxy to call
@@ -204,7 +197,7 @@ export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, fr
  * @param calldata The data to use in the call
  * @param shouldAssert Whether to assert success in the proxy call
  */
-export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): string;
+export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;
 /**
  * Validates that an address exists, isn't null, and is properly
  * formatted for Wyvern and OpenSea

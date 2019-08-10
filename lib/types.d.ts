@@ -99,7 +99,7 @@ export declare enum WyvernSchemaName {
     ERC721 = "ERC721",
     ERC1155 = "ERC1155",
     Enjin = "Enjin",
-    ENSShortNameAuction = "ENSShortNameAuction",
+    ENSShortNameAuction = "ENSShortNameAuction"
 }
 /**
  * The NFT version that this contract uses.
@@ -174,6 +174,7 @@ export interface Asset {
     tokenId: string;
     tokenAddress: string;
     nftVersion?: NFTVersion;
+    name?: string;
 }
 /**
  * Simple, unannotated fungible asset spec

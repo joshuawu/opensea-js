@@ -1,6 +1,6 @@
 import { MethodAbi, EventAbi } from 'web3';
-export declare const getMethod: (abi: Readonly<import("src/types").PartialAbiDefinition>[], name: string) => MethodAbi;
-export declare const event: (abi: Readonly<import("src/types").PartialAbiDefinition>[], name: string) => EventAbi;
+export declare const getMethod: (abi: Readonly<import("./types").PartialAbiDefinition>[], name: string) => MethodAbi;
+export declare const event: (abi: Readonly<import("./types").PartialAbiDefinition>[], name: string) => EventAbi;
 export declare const DECENTRALAND_AUCTION_CONFIG: {
     '1': string;
 };
