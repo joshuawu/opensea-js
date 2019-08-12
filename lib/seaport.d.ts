@@ -1,5 +1,5 @@
 import * as Web3 from 'web3';
-import { Schema } from 'wyvern-schemas/dist-tsc/types';
+import { Schema } from 'wyvern-schemas/dist/types';
 import { OpenSeaAPI } from './api';
 import { OpenSeaAPIConfig, OrderSide, UnhashedOrder, Order, UnsignedOrder, PartialReadonlyContractAbi, EventType, EventData, WyvernSchemaName, OpenSeaFungibleToken, WyvernAsset, OpenSeaFees, Asset, OpenSeaAssetContract, FungibleAsset } from './types';
 import { BigNumber } from 'bignumber.js';

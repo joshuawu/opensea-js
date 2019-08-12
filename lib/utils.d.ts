@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
-import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist-tsc/types';
+import { Schema, AnnotatedFunctionABI } from 'wyvern-schemas/dist/types';
 import { WyvernAtomicizerContract } from 'wyvern-js/lib/abi_gen/wyvern_atomicizer';
 import { HowToCall } from 'wyvern-js/lib/types';
 import { ECSignature, Order, Web3Callback, OrderJSON, UnhashedOrder, OpenSeaAsset, OpenSeaAssetBundle, UnsignedOrder, WyvernAsset, Asset, WyvernBundle, WyvernAssetLocation, WyvernNFTAsset, OpenSeaAssetContract, WyvernERC721Asset, FungibleAsset, WyvernFTAsset, OpenSeaFungibleToken } from './types';
@@ -27,7 +27,7 @@ export declare const MIN_EXPIRATION_SECONDS = 10;
 export declare const ORDER_MATCHING_LATENCY_SECONDS: number;
 export declare const SELL_ORDER_BATCH_SIZE = 3;
 export declare const DEFAULT_GAS_INCREASE_FACTOR = 1.1;
-export declare const annotateERC721TransferABI: (asset: WyvernERC721Asset) => any;
+export declare const annotateERC721TransferABI: (asset: WyvernERC721Asset) => AnnotatedFunctionABI;
 /**
  * Promisify a call a method on a contract,
  * handling Parity errors. Returns '0x' if error.
@@ -189,7 +189,7 @@ export declare function encodeAtomicizedTransfer(schema: Schema<any>, assets: Wy
  * @param from From address
  * @param to To address
  */
-export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): any;
+export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, from: string, to: string): string;
 /**
  * Encode a call to a user's proxy contract
  * @param address The address for the proxy to call
@@ -197,7 +197,7 @@ export declare function encodeTransferCall(transferAbi: AnnotatedFunctionABI, fr
  * @param calldata The data to use in the call
  * @param shouldAssert Whether to assert success in the proxy call
  */
-export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): any;
+export declare function encodeProxyCall(address: string, howToCall: HowToCall, calldata: string, shouldAssert?: boolean): string;
 /**
  * Validates that an address exists, isn't null, and is properly
  * formatted for Wyvern and OpenSea

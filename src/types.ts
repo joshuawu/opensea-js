@@ -8,7 +8,7 @@ import {
   Order as WyvernOrder
 } from 'wyvern-js/lib/types'
 
-import { Token } from 'wyvern-schemas/dist-tsc/types'
+import { Token } from 'wyvern-schemas/dist/types'
 
 export {
   Network,

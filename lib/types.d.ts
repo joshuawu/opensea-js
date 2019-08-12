@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import * as Web3 from 'web3';
 import { Network, HowToCall, ECSignature, Order as WyvernOrder } from 'wyvern-js/lib/types';
-import { Token } from 'wyvern-schemas/dist-tsc/types';
+import { Token } from 'wyvern-schemas/dist/types';
 export { Network, HowToCall, ECSignature };
 /**
  * Events emitted by the SDK. There are five types:
